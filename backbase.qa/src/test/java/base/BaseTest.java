@@ -34,7 +34,7 @@ public class BaseTest {
 	public static ExtentReports report;
 	public ExtentTest logger;
 	String browser;
-	String url; //Application URL
+	String url; 
 	
 	@BeforeSuite
 	public void setUpReport() {
