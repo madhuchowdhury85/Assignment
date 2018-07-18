@@ -9,23 +9,17 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
-import org.testng.Assert;
 import org.testng.ITestResult;
 import org.testng.Reporter;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeSuite;
 
 import com.relevantcodes.extentreports.ExtentReports;
 import com.relevantcodes.extentreports.ExtentTest;
 import com.relevantcodes.extentreports.LogStatus;
 
-import dataProvider.ConfigDataProvider;
-import factory.BrowserFactory;
 import library.Utility;
-import pageObjects.HomePage;
 
 public class BaseTest {
 
@@ -33,61 +27,58 @@ public class BaseTest {
 	public static Properties prop;
 	public static ExtentReports report;
 	public ExtentTest logger;
-	String browser;
-	String url; 
-	
+
 	@BeforeSuite
 	public void setUpReport() {
-		report = new ExtentReports("./Reports/Backbase_"+Utility.getCurrentDate_Time()+".html");
-		
+		// Create object of ExtentReports class- This is main class which will create
+		// report
+		report = new ExtentReports("./Reports/Backbase_" + Utility.getCurrentDate_Time() + ".html");
+
 	}
 
-	@AfterSuite (alwaysRun= true)
+	@AfterSuite(alwaysRun = true)
 	public void tearDownReport() {
+		// This will add another test in report
 		report.flush();
-		}
-	
-	/*@BeforeClass
-	public void openApplication() {
-		
-		ConfigDataProvider config= new ConfigDataProvider();
-		browser= config.getBrowser();
-		url= config.getStagingURL();
-		driver = BrowserFactory.startBrowser(browser, url);
-		//homeP = new HomePage();
-		//Assert.assertTrue(homeP.isPageLoaded(), "User is not successfully logged in");
 	}
-	
-	@AfterClass
-	public void tearDownApplication() {
-		BrowserFactory.closeBrowser(driver);
-	}*/
 
-	@AfterMethod (alwaysRun= true)
-	public void endTest(ITestResult result) 
-	{
+	@AfterMethod(alwaysRun = true)
+	public void endTest(ITestResult result) {
+		// Call captureScreenshot method and it will return file destination
 		String path = Utility.captureScreenshot(driver);
-		
-		if (result.getStatus() == ITestResult.SUCCESS) 
-		{
+
+		if (result.getStatus() == ITestResult.SUCCESS) {
+			// Will create a logger and add screenshot in the destination file
+			// for the pass test cases
 			logger.log(LogStatus.PASS, logger.addScreenCapture(path));
-			
-		} else if (result.getStatus() == ITestResult.FAILURE) 
-		{
+
+		} else if (result.getStatus() == ITestResult.FAILURE) {
+			// Will create a logger and add screenshot in the destination file
+			// for the fail test cases
 			logger.log(LogStatus.FAIL, logger.addScreenCapture(path));
 		}
 
+		// logger closed
 		report.endTest(logger);
 	}
 
 	// Constructor to load config file
 	public BaseTest() {
+
+		// Specify the file location here. I used
+		// object repository inside project directory only
 		File src = new File("./Config/config.properties");
 
 		try {
+			// Create FileInputStream object
 			FileInputStream input = new FileInputStream(src);
+
+			// Create Properties class object to read properties file
 			prop = new Properties();
+
+			// Load file so we can use into our script
 			prop.load(input);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -97,29 +88,49 @@ public class BaseTest {
 	public static WebDriver startBrowser()
 
 	{
+		// browser is the parameter fetching from config file
 		String browserName = prop.getProperty("browser");
 
 		if (browserName.equalsIgnoreCase("chrome")) {
+
+			// Specify the driver location here. I used
+			// object repository inside project directory
 			System.setProperty("webdriver.chrome.driver", "./Drivers/chromedriver.exe");
+
 			driver = new ChromeDriver();
 		}
 
 		else if (browserName.equalsIgnoreCase("Firefox")) {
+
+			// Specify the driver location here. I used
+			// object repository inside project directory
 			System.setProperty("webdriver.gecko.driver", "./Drivers/geckodriver.exe");
+
 			driver = new FirefoxDriver();
-		} 
-		else if (browserName.equalsIgnoreCase("IE")) {
+		} else if (browserName.equalsIgnoreCase("IE")) {
+
+			// Specify the driver location here. I used
+			// object repository inside project directory
 			System.setProperty("webdriver.ie.driver", "./Drivers/IEDriverServer.exe");
+
 			driver = new InternetExplorerDriver();
 		} else {
 			System.out.println("Please provide valid browser");
 		}
-		
+
 		driver.manage().deleteAllCookies();
+
+		// Wait for 20 seconds when trying to find an element or elements
+		// (if) they are not immediately available
 		driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
+
+		// Maximize window
 		driver.manage().window().maximize();
+
+		// Pass application- url is the parameter fetching from config file
 		driver.get(prop.getProperty("url"));
-		
+
+		// return webdriver
 		return driver;
 	}
 
