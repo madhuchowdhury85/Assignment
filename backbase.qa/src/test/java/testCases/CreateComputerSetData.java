@@ -14,75 +14,83 @@ import factory.DataProviderFactory;
 import pageObjects.AddComputerPage;
 import pageObjects.HomePage;
 
-public class CreateComputerSetData extends BaseTest
-{
+public class CreateComputerSetData extends BaseTest {
 	WebDriver driver;
 	HomePage homeP;
 	AddComputerPage addComP;
-	
+
 	@BeforeClass
-	public void openApplication()
-	{
-		driver= BaseTest.startBrowser();
+	public void openApplication() {
+		// Initiate browser
+		driver = BaseTest.startBrowser();
+
+		// Navigate to Home Page
 		homeP = new HomePage();
-		Assert.assertTrue(homeP.isPageLoaded(), "User is not successfully logged in");
+
+		// Verify Home Page loaded
+		Assert.assertTrue(homeP.isPageLoaded(), "User is not successfully landed to Home Page");
 	}
-	
+
 	@AfterClass
-	public void tearDown()
-	{
-		
+	public void tearDown() {
+		// Close the browser
 		driver.quit();
-		
+
 	}
+
+	@DataProvider(name = "createcomputersetofdata")
+	public Object[][] getLoginData1() {
 		
-	@DataProvider (name = "createcomputersetofdata")
-	public Object[][] getLoginData1() 
-	{
-		int rowcount=DataProviderFactory.getanotherExcel().getNumberOfRows("Computer");
-		
-		Object[][] data = new Object[rowcount-1][4]; 
-				
-		for(int i=0;i<rowcount-1;i++)
-		{
-			data[i][0]=DataProviderFactory.getanotherExcel().getstringdata("Computer", i+1, 0);
-			data[i][1]=DataProviderFactory.getanotherExcel().getDate("Computer", i+1, 1);
-			data[i][2]= DataProviderFactory.getanotherExcel().getDate("Computer", i+1, 2);
-			data[i][3]=DataProviderFactory.getanotherExcel().getstringdata("Computer", i+1, 3);
+		// Number of rows in test data excel
+		int rowcount = DataProviderFactory.getanotherExcel().getNumberOfRows("Computer");
+
+		// Create data of 2d object
+		Object[][] data = new Object[rowcount - 1][4];
+
+		for (int i = 0; i < rowcount - 1; i++) {
+			// Fetch the data from excel and keep it in 2d data
+			data[i][0] = DataProviderFactory.getanotherExcel().getstringdata("Computer", i + 1, 0);
+			data[i][1] = DataProviderFactory.getanotherExcel().getDate("Computer", i + 1, 1);
+			data[i][2] = DataProviderFactory.getanotherExcel().getDate("Computer", i + 1, 2);
+			data[i][3] = DataProviderFactory.getanotherExcel().getstringdata("Computer", i + 1, 3);
 		}
-		
+
+		// Return data
 		return data;
 	}
 
-	
 	@Test(dataProvider = "createcomputersetofdata")
-	public void computerCreateSetofData(String cName, String iDate, String dDate, String company  )
-	{
-    		
+	public void computerCreateSetofData(String cName, String iDate, String dDate, String company) {
+
+		// Start a report with test case name and create a logger
 		logger = report.startTest("Create Computer with multiple set of data");
-				
-		addComP=homeP.navigateToAddComputerPage();
-		
+
+		// Navigate to Add Computer Page
+		addComP = homeP.navigateToAddComputerPage();
+
+		// It will fetch data from data provider and fill in Add computer
 		addComP.fillDataComputer(cName, iDate, dDate, company);
-				
-		homeP= addComP.createComputer();
-		
+
+		// Hit create computer button, it will save data and will return to Home page
+		homeP = addComP.createComputer();
+
+		// Added info in logger
 		logger.log(LogStatus.INFO, "Data entered in add computer page and saved");
-		
-		boolean isMsgFound= homeP.presenceOfMsg();
-		
-		if(isMsgFound)
-		{
-					
+
+		// Verify the success message in Home Page
+		boolean isMsgFound = homeP.presenceOfMsg();
+
+		if (isMsgFound) {
+
 			logger.log(LogStatus.PASS, "New computer created with name as " + cName);
 		}
-		
-		else
-		{
+
+		else {
 			logger.log(LogStatus.FAIL, "New computer not created with name as " + cName);
 		}
-		
-		report.endTest(logger);	
-				
-		}
+
+		// End of logger
+		report.endTest(logger);
+
+	}
 }
